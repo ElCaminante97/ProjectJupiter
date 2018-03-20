@@ -3,7 +3,6 @@
 void terminal_writestring(const char* str);
 
 InterruptManager::GateDescriptor InterruptManager::interruptDescriptorTable[256];
-uint16_t InterruptManager::hardwareInterruptOffset;
 
  void InterruptManager::setInterruptDescriptorTableEntry(uint8_t interrupt, uint16_t codeSegmentSelectorOffset, void (*handler)(), uint8_t descriptorPrivilageLevel, uint8_t descriptorType){
      interruptDescriptorTable[interrupt].handlerAddressLowBits = ((uint32_t) handler) & 0xFFFF;
@@ -23,6 +22,17 @@ uint16_t InterruptManager::hardwareInterruptOffset;
  {
      InterruptManager::hardwareInterruptOffset = hardwareInterruptOffset;
      uint32_t CodeSegment = gdt->CodeSegmentSelector();
+      char* foo = "CodeSegment 0x000000\n";
+        char* hex = "0123456789ABCDEF";
+        
+        foo[14] = hex[(CodeSegment >> 20) & 0xF];
+        foo[15] = hex[(CodeSegment >> 16) & 0xF];
+        foo[16] = hex[(CodeSegment >> 12) & 0xF];
+        foo[17] = hex[(CodeSegment >> 8) & 0xF];
+        foo[18] = hex[(CodeSegment >> 4) & 0xF];
+        foo[19] = hex[CodeSegment & 0xF];
+        
+        terminal_writestring(foo);
      const uint8_t IDT_INTERRUPT_GATE = 0xE;
      for(uint8_t i = 255; i > 0; i--){
          setInterruptDescriptorTableEntry(i, CodeSegment, &interruptIgnore, 0, IDT_INTERRUPT_GATE);
@@ -107,14 +117,21 @@ void InterruptManager::Deactivate(){
 }
     
 uint32_t InterruptManager::HandleInterrupt(uint8_t interrupt, uint32_t esp){
-    if(interrupt >= hardwareInterruptOffset){
-        char* foo = "Interrupt 0x00";
+    
+    //if(interrupt >= hardwareInterruptOffset){
+        char* foo = "Interrupt 0x00\n";
         char* hex = "0123456789ABCDEF";
         
         foo[12] = hex[(interrupt >> 4) & 0xF];
         foo[13] = hex[interrupt & 0xF];
         
-        terminal_writestring(foo + '\n');
-    }
+        terminal_writestring(foo);
+    /*}else{
+         char* foo = "Exception 0x00\n";
+        char* hex = "0123456789ABCDEF";
+        
+        foo[12] = hex[(interrupt >> 4) & 0xF];
+        foo[13] = hex[interrupt & 0xF];
+    }*/
     return esp;
 }

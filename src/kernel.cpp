@@ -118,6 +118,15 @@ void terminal_writestring(const char* data)
 {
 	terminal_write(data, strlen(data));
 }
+
+typedef void (*constructor)();
+extern "C" constructor start_ctors;
+extern "C" constructor end_ctors;
+extern "C" void callConstructors(){
+    for(constructor* i = &start_ctors; i != &end_ctors; i++){
+        (*i)();
+    }
+}
  
 extern "C" void kernel_main(void) 
 {
@@ -142,5 +151,7 @@ extern "C" void kernel_main(void)
     
     terminal_writestring("Interrupts Activated...\n");
     
-    while(1);
+    while(1){
+        terminal_writestring("Running...\n");
+    }
 }

@@ -29,7 +29,7 @@ protected:
         
     }__attribute__ ((packed));
     
-    static uint16_t hardwareInterruptOffset;
+    uint16_t hardwareInterruptOffset;
     
     static void setInterruptDescriptorTableEntry(uint8_t interrupt, uint16_t codeSegmentSelectorOffset, void (*handler)(), uint8_t descriptorPrivilageLevel, uint8_t descriptorType);
     

@@ -41,6 +41,7 @@ The linker script specifies _start as the entry point to the kernel and the
 bootloader will jump to this position once the kernel has been loaded. It
 doesn't make sense to return from this function as the bootloader is gone.
 */
+.extern callConstructors
 .section .text
 .global _start
 .type _start, @function
@@ -84,6 +85,9 @@ _start:
 	stack since (pushed 0 bytes so far) and the alignment is thus
 	preserved and the call is well defined.
 	*/
+	call callConstructors
+	push %eax
+	push %ebx
 	call kernel_main
 
 	/*
