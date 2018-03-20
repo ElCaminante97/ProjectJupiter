@@ -5,6 +5,24 @@ void terminal_writestring(const char* str);
 InterruptManager::GateDescriptor InterruptManager::interruptDescriptorTable[256];
 uint16_t InterruptManager::hardwareInterruptOffset;
 
+InterruptHandler::InterruptHandler(InterruptManager* interruptManager, uint8_t InterruptNumber){
+    this->InterruptNumber = InterruptNumber;
+    this->Interruptmanager = interruptManager;
+    Interruptmanager->handlers[InterruptNumber] = this;
+}
+
+InterruptHandler::~InterruptHandler(){
+    if(Interruptmanager->handlers[InterruptNumber] == this){
+        Interruptmanager->handlers[InterruptNumber] = 0;
+    }
+}
+
+uint32_t InterruptHandler::HandleInterrupt(uint32_t esp){
+    return esp;
+}
+
+InterruptManager* InterruptManager::ActiveInterruptManager = 0;
+
  void InterruptManager::setInterruptDescriptorTableEntry(uint8_t interrupt, uint16_t codeSegmentSelectorOffset, void (*handler)(), uint8_t descriptorPrivilageLevel, uint8_t descriptorType){
      interruptDescriptorTable[interrupt].handlerAddressLowBits = ((uint32_t) handler) & 0xFFFF;
      interruptDescriptorTable[interrupt].handlerAddressHighBits = ((uint32_t) handler >> 16) & 0xFFFF;
@@ -26,8 +44,10 @@ uint16_t InterruptManager::hardwareInterruptOffset;
      const uint8_t IDT_INTERRUPT_GATE = 0xE;
      for(uint8_t i = 255; i > 0; i--){
          setInterruptDescriptorTableEntry(i, CodeSegment, &interruptIgnore, 0, IDT_INTERRUPT_GATE);
+         handlers[i] = 0;
     }
     setInterruptDescriptorTableEntry(0, CodeSegment, &interruptIgnore, 0, IDT_INTERRUPT_GATE);
+    handlers[0] = 0;
     
     setInterruptDescriptorTableEntry(0x00, CodeSegment, &HandleException0x00, 0, IDT_INTERRUPT_GATE);
     setInterruptDescriptorTableEntry(0x01, CodeSegment, &HandleException0x01, 0, IDT_INTERRUPT_GATE);
@@ -99,22 +119,47 @@ uint16_t InterruptManager::HardwareInterruptOffset(){
 }
 
 void InterruptManager::Activate(){
+    if(ActiveInterruptManager != 0)
+        ActiveInterruptManager->Deactivate();
+    
+    ActiveInterruptManager = this;
     asm("sti");
 }
 
 void InterruptManager::Deactivate(){
-    asm("cli");
+    if(ActiveInterruptManager == this){
+        ActiveInterruptManager = 0;
+        asm("cli");
+    }
 }
     
 uint32_t InterruptManager::HandleInterrupt(uint8_t interrupt, uint32_t esp){
-    if(interrupt >= hardwareInterruptOffset){
-        char* foo = "Interrupt 0x00";
+   if(ActiveInterruptManager != 0){
+       return ActiveInterruptManager->DoHandleInterrupt(interrupt, esp);
+    }
+    return esp;
+}
+
+
+ uint32_t InterruptManager::DoHandleInterrupt(uint8_t interrupt, uint32_t esp){
+     if(handlers[interrupt] != 0){
+        //esp = handlers[interrupt]->HandleInterrupt(esp);
+    }else if(interrupt != hardwareInterruptOffset){
+        char* foo = "Unhandled Interrupt 0x00";
         char* hex = "0123456789ABCDEF";
         
-        foo[12] = hex[(interrupt >> 4) & 0xF];
-        foo[13] = hex[interrupt & 0xF];
+        foo[22] = hex[(interrupt >> 4) & 0xF];
+        foo[23] = hex[interrupt & 0xF];
         
         terminal_writestring(foo + '\n');
     }
+    
+    /*if(hardwareInterruptOffset <= interrupt && interrupt < hardwareInterruptOffset+ 16){
+        programmableInterruptControllerMasterCommandPort.Write(0x20);
+        if(hardwareInterruptOffset+8 <= interrupt){
+            programmableInterruptControllerSlaveCommandPort.Write(0x20);
+        }
+    }*/
+    
     return esp;
 }

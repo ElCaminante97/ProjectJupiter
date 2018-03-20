@@ -7,9 +7,27 @@
 #include <gdt.h>
 #include <port.h>
 
+class InterruptManager;
+
+class InterruptHandler{
+protected:
+    uint8_t InterruptNumber;
+    InterruptManager* Interruptmanager;
+    InterruptHandler(InterruptManager* interruptManager, uint8_t InterruptNumber);
+    ~InterruptHandler();
+public:
+    virtual uint32_t HandleInterrupt(uint32_t esp);
+};
+
 class InterruptManager{
     
+    friend class InterruptHandler;
+    
 protected:
+    
+    static InterruptManager* ActiveInterruptManager;
+    InterruptHandler* handlers[256];
+    
     struct GateDescriptor{
         
         uint16_t handlerAddressLowBits;
@@ -51,7 +69,7 @@ protected:
     static void HandleInterruptRequest0x0D();
     static void HandleInterruptRequest0x0E();
     static void HandleInterruptRequest0x0F();
-    static void HandleInterruptRequest0x31();
+    //static void HandleInterruptRequest0x31();
     
     static void HandleException0x00();
     static void HandleException0x01();
@@ -75,6 +93,7 @@ protected:
     static void HandleException0x13();
     
     static uint32_t HandleInterrupt(uint8_t interrupt, uint32_t esp);
+    uint32_t DoHandleInterrupt(uint8_t interrupt, uint32_t esp);
     
     Port8BitSlow programmableInterruptControllerMasterCommandPort;
     Port8BitSlow programmableInterruptControllerMasterDataPort;

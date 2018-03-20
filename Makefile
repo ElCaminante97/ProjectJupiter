@@ -8,15 +8,15 @@ obj/%.o : src/%.s
 
 obj/%.o : src/%.c
 	mkdir -p $(@D)
-	i686-elf-gcc -c $< -o $@ -std=gnu99 -ffreestanding -Wall -Wextra - Iinclude
+	i686-elf-gcc -c $< -o $@ -ffreestanding - Iinclude
 	
 obj/%.o : src/%.cpp
 	mkdir -p $(@D)
-	i686-elf-g++ -c $< -o $@ -ffreestanding -Wall -Wextra -fno-exceptions -fno-rtti -Iinclude
+	i686-elf-g++ -c $< -o $@ -ffreestanding -Wno-write-strings -fno-exceptions -fno-rtti -Iinclude
 	
 bin/kernel.bin : link.ld $(OBJECTS)
 	mkdir -p $(@D)
-	i686-elf-gcc -T $< -o $@ -ffreestanding -nostdlib $(OBJECTS) -lgcc
+	i686-elf-gcc -T $< -o $@ -nostdlib $(OBJECTS) -lgcc
 	
 projectJupiter.iso : bin/kernel.bin
 	mkdir -p iso/boot/grub

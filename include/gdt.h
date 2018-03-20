@@ -36,5 +36,5 @@ public:
     uint16_t DataSegmentSelector();
     uint16_t CodeSegmentSelector();
 
-};
+}__attribute__ ((packed));
 #endif

@@ -56,7 +56,7 @@ HandleInterruptRequest 0x0C
 HandleInterruptRequest 0x0D
 HandleInterruptRequest 0x0E
 HandleInterruptRequest 0x0F
-HandleInterruptRequest 0x31
+#HandleInterruptRequest 0x31
 
 init_bottom:
     
