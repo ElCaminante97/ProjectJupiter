@@ -70,7 +70,7 @@ init_bottom:
     push (interruptnumber)
     call _ZN16InterruptManager15HandleInterruptEhm
     add %esp, 6
-    #mov %eax, %esp
+    mov %eax, %esp
     
     pop %gs
     pop %fs

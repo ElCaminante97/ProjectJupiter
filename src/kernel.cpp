@@ -152,6 +152,5 @@ extern "C" void kernel_main(void)
     terminal_writestring("Interrupts Activated...\n");
     
     while(1){
-        terminal_writestring("Running...\n");
     }
 }
