@@ -3,6 +3,8 @@
 #include <stdint.h>
 #include <gdt.h>
 #include <port.h>
+#include <interrupts.h>
+
  
 /* Check if the compiler thinks we are targeting the wrong operating system. */
 #if defined(__linux__)
@@ -129,4 +131,16 @@ extern "C" void kernel_main(void)
     GlobalDescriptorTable gdt;
     
     terminal_writestring("Global Descriptor Table Loaded...\n");
+    terminal_writestring("Loading Interrupt Descriptor Table...\n");
+    
+    InterruptManager idt(0x20, &gdt);
+    
+    terminal_writestring("Interrupt Descriptor Table Loaded...\n");
+    terminal_writestring("Activating Interrupts...\n");
+    
+    idt.Activate();
+    
+    terminal_writestring("Interrupts Activated...\n");
+    
+    while(1);
 }

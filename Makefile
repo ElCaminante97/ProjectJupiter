@@ -1,6 +1,6 @@
 
 
-OBJECTS=obj/boot.o obj/kernel.o obj/gdt.o obj/port.o
+OBJECTS=obj/boot.o obj/kernel.o obj/gdt.o obj/port.o obj/interruptstubs.o obj/interrupts.o
 
 obj/%.o : src/%.s
 	mkdir -p $(@D)
